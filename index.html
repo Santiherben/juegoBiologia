@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Juego Sistema Endocrino</title>
+  <style>
+    body { font-family: sans-serif; background-color: #e9f5df; margin: 0; padding: 0; overflow-x: hidden; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+    #introCarousel { position: fixed; top:0; left:0; width:100%; height:100%; background:#333; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:100; }
+    #introCarousel img { width:60%; max-width:300px; border-radius:1rem; box-shadow:0 4px 8px rgba(0,0,0,0.5); animation:rotate 3s infinite; }
+    #skipBtn { margin-top:2rem; padding:0.5rem 1rem; background:#4caf50; color:#fff; border:none; border-radius:5px; cursor:pointer; font-size:1rem; }
+    @keyframes rotate {0%{transform:rotateY(0);}50%{transform:rotateY(180deg);}100%{transform:rotateY(360deg);}}
+    .container { display:none; width:100%; max-width:500px; padding:1rem; box-sizing:border-box; text-align:center; }
+    #welcome { margin-top:1rem; font-size:1.5rem; }
+    #namePrompt { margin:1rem 0; }
+    #namePrompt input { padding:0.5rem; border-radius:5px; border:1px solid #ccc; width:60%; max-width:200px; }
+    #namePrompt button { margin-left:0.5rem; padding:0.5rem 1rem; background:#4caf50; color:#fff; border:none; border-radius:5px; cursor:pointer; }
+    #counter { font-size:1.2rem; margin:0.5rem 0; }
+    .card-container { perspective:1000px; width:100%; }
+    .card { width:100%; max-width:400px; margin:auto; }
+    .card-inner { position:relative; width:100%; transition:transform 0.6s; transform-style:preserve-3d; }
+    .card.flipped .card-inner { transform:rotateY(180deg); }
+    .card-front, .card-back { position:absolute; width:100%; backface-visibility:hidden; border-radius:1rem; overflow:hidden; background:#fff; box-shadow:0 4px 8px rgba(0,0,0,0.2); }
+    .card-front { cursor:pointer; }
+    .card-front img { width:100%; height:auto; display:block; }
+    .card-back { transform:rotateY(180deg); padding:1rem; display:flex; flex-direction:column; justify-content:flex-start; align-items:center; }
+    .question { font-weight:bold; margin-bottom:1rem; font-size:1rem; }
+    .options { width:100%; }
+    .options button { width:90%; margin:0.3rem 0; padding:0.5rem; background:#b7e1cd; border:none; border-radius:5px; cursor:pointer; font-size:0.9rem; }
+    .options button:hover { background:#99d3b4; }
+    .feedback { margin-top:1rem; font-weight:bold; font-size:1rem; }
+    #nextBtn, #restartBtn { margin:1rem 0; padding:0.5rem 1rem; background:#4caf50; color:#fff; border:none; border-radius:5px; cursor:pointer; display:none; font-size:1rem; }
+    @media(max-width:400px){ #namePrompt input{width:100%;max-width:none;} .options button{font-size:0.8rem;} #skipBtn{font-size:0.9rem;} }
+  </style>
+</head>
+<body>
+  <div id="introCarousel">
+    <img id="carouselImg" src="imagenes/2.png" alt="Intro">
+    <button id="skipBtn" onclick="endIntro()">¡Comenzar!</button>
+  </div>
+  <div class="container" id="gameContainer">
+    <h1 id="welcome">Juego del Sistema Endocrino</h1>
+    <div id="namePrompt">
+      <label>Ingresa tu nombre: </label>
+      <input id="playerName" type="text">
+      <button onclick="startGame()">Comenzar</button>
+    </div>
+    <div id="counter"></div>
+    <div class="card-container">
+      <div class="card" id="card">
+        <div class="card-inner" id="cardInner">
+          <div class="card-front" onclick="flipCard()">
+            <img id="cardImage" src="" alt="Imagen tarjeta">
+          </div>
+          <div class="card-back">
+            <div class="question" id="questionText"></div>
+            <div class="options" id="optionButtons"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="feedback" class="feedback"></div>
+    <button id="nextBtn" onclick="nextCard()">Siguiente</button>
+    <button id="restartBtn" onclick="restartGame()">Reiniciar juego</button>
+  </div>
+  <script>
+    let introIndex=0,introInterval;
+    const carouselImages=['imagenes/2.png','imagenes/4.png','imagenes/6.png','imagenes/8.png','imagenes/10.png','imagenes/12.png','imagenes/15.png','imagenes/16.png','imagenes/17.png'];
+    function startIntro(){introInterval=setInterval(()=>{introIndex=(introIndex+1)%carouselImages.length;document.getElementById('carouselImg').src=carouselImages[introIndex];},1000);setTimeout(endIntro,7000);}    function endIntro(){clearInterval(introInterval);document.getElementById('introCarousel').style.display='none';document.getElementById('gameContainer').style.display='block';}window.onload=startIntro;
+    let playerName='',score=0,current=0;const cards=[
+      {img:'imagenes/2.png',question:'¿Quién produce oxitocina y vasopresina?',options:['Hipófisis','Hipotálamo','Tiroides'],answer:'Hipotálamo',explanations:{'Hipófisis':'Esto no es así debido a que la hipófisis almacena pero no produce estas hormonas.','Hipotálamo':'Muy bien, el hipotálamo produce oxitocina y vasopresina, luego almacenadas en la neurohipófisis.','Tiroides':'Esto no es correcto, la tiroides produce tiroxina y triyodotironina, no estas hormonas.'}},
+      {img:'imagenes/4.png',question:'¿Quién es la glándula maestra del sistema endocrino?',options:['Hipotálamo','Tiroides','Hipófisis'],answer:'Hipófisis',explanations:{'Hipotálamo':'Aunque regula al resto, la maestra es la hipófisis.','Tiroides':'No regula otras glándulas.','Hipófisis':'¡Bien! Controla y libera hormonas que regulan otras glándulas.'}},
+      {img:'imagenes/6.png',question:'¿Dónde se almacenan oxitocina y vasopresina?',options:['Neurohipófisis','Tiroides','Suprarrenales'],answer:'Neurohipófisis',explanations:{'Neurohipófisis':'Exacto. Almacena hormonas producidas en el hipotálamo.','Tiroides':'Produce hormonas tiroideas, no almacena estas.','Suprarrenales':'Producen adrenalina y cortisol.'}},
+      {img:'imagenes/8.png',question:'¿Qué hormona regula el equilibrio hídrico en riñones?',options:['Adrenalina','Oxitocina','Vasopresina'],answer:'Vasopresina',explanations:{'Adrenalina':'Actúa en situaciones de estrés, no en equilibrio hídrico.','Oxitocina':'Actúa en parto y lactancia.','Vasopresina':'¡Correcto! Aumenta reabsorción de agua en riñones.'}},
+      {img:'imagenes/10.png',question:'¿Qué hormona estimula contracciones uterinas y eyección de leche?',options:['Oxitocina','FSH','TSH'],answer:'Oxitocina',explanations:{'Oxitocina':'¡Bien! Actúa en parto y eyección de leche.','FSH':'Regula maduración ovocitaria.','TSH':'Estimula tiroides.'}},
+      {img:'imagenes/12.png',question:'¿Qué parte de la hipófisis produce ACTH, GH y LH?',options:['Adenohipófisis','Hipotálamo','Neurohipófisis'],answer:'Adenohipófisis',explanations:{'Adenohipófisis':'Correcto, secreta estas hormonas.','Hipotálamo':'Regula, no secreta estas hormonas.','Neurohipófisis':'Almacena oxitocina y vasopresina.'}},
+      {img:'imagenes/15.png',question:'¿Qué glándula produce estrógenos y progesterona?',options:['Ovario','Hipófisis','Testículos'],answer:'Ovario',explanations:{'Ovario':'Así es. Regula ciclo menstrual y embarazo.','Hipófisis':'Controla otras glándulas, no produce estas hormonas.','Testículos':'Producen testosterona.'}},
+      {img:'imagenes/16.png',question:'¿Qué regula la maduración de los óvulos y el ciclo menstrual?',options:['Testosterona','Progesterona','Estrógeno'],answer:'Estrógeno',explanations:{'Testosterona':'Hormona masculina, no regula ciclo menstrual.','Progesterona':'Prepara útero para embarazo, no ciclo inicial.','Estrógeno':'Correcto, participa en maduración folicular.'}},
+      {img:'imagenes/17.png',question:'¿Qué hormona principal produce el testículo?',options:['Estrógeno','Progesterona','Testosterona'],answer:'Testosterona',explanations:{'Estrógeno':'Hormona femenina, no producida por testículos.','Progesterona':'Producida por ovarios y placenta.','Testosterona':'¡Correcto! Responsable de caracteres sexuales masculinos.'}}
+    ];
+    function startGame(){let inp=document.getElementById('playerName').value.trim();if(!inp)return;playerName=inp;document.getElementById('namePrompt').style.display='none';document.getElementById('counter').style.display='block';loadCard(0);}    
+    function flipCard(){document.getElementById('card').classList.toggle('flipped');}
+    function loadCard(i){current=i;if(i===0)score=0;let cd=cards[i];document.getElementById('counter').textContent=`${i+1} / ${cards.length}`;let img=document.getElementById('cardImage');img.onload=()=>{document.getElementById('cardInner').style.height=img.offsetHeight+'px';};img.src=cd.img;document.getElementById('questionText').textContent=cd.question;let opts=document.getElementById('optionButtons');opts.innerHTML='';document.getElementById('feedback').textContent='';document.getElementById('nextBtn').style.display='none';document.getElementById('card').classList.remove('flipped');cd.options.forEach(opt=>{let b=document.createElement('button');b.textContent=opt;b.onclick=()=>{validateAnswer(b,cd)};opts.appendChild(b);});}
+    function validateAnswer(b,cd){let ok=b.textContent===cd.answer;if(ok)score++;b.style.backgroundColor=ok?'#8fe88f':'#f28b82';document.getElementById('feedback').textContent=`${playerName}, ${cd.explanations[b.textContent]}`;document.querySelectorAll('.options button').forEach(x=>x.disabled=true);document.getElementById('nextBtn').style.display='inline-block';}
+    function nextCard(){if(current+1<cards.length)loadCard(current+1);else showResults();}
+    function showResults(){let c=document.getElementById('gameContainer');c.innerHTML=`<h2>🎉 ${playerName}, completaste el juego.</h2><p>Puntuación: ${score} / ${cards.length}</p><button onclick="restartGame()" id="restartBtn">Reiniciar juego</button>`;}
+    function restartGame(){location.reload();}
+  </script>
+</body>
+</html>
